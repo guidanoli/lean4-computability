@@ -375,13 +375,18 @@ def incbin : BinaryNat → BinaryNat
   | BinaryNat._I b => BinaryNat._O (incbin b)
 
 def toBinaryNat : Nat → BinaryNat
-  | 0 => BinaryNat._Z
+  | 0 => BinaryNat._O BinaryNat._Z
   | n + 1 => incbin (toBinaryNat n)
 
 def toBitList : BinaryNat → List String
   | BinaryNat._Z => []
-  | BinaryNat._O b => "1" :: toBitList b
+  | BinaryNat._O b => "0" :: toBitList b
   | BinaryNat._I b => "1" :: toBitList b
+
+def encodeBinary : Nat → String
+  | n => String.join (toBitList (toBinaryNat n))
+
+--#eval encodeBinary 255
 
 def TM.encode : TuringMachine → Nat
   -- encoding as {finalState}{transitions}
@@ -397,8 +402,6 @@ def TM.encode : TuringMachine → Nat
          (List.map encodeStep tm.rules)
 
   where
-    encodeBinary : Nat → String
-    | n => String.join (toBitList (toBinaryNat n))
     encodeState : Nat → String
     | st => toString stateMark ++ encodeBinary st
     encodeSymbol : Nat → String
