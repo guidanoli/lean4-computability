@@ -310,6 +310,37 @@ def PRF.limMin : PRF (k + 1) → PRF k → PRF k
 --           (@PRF.comp2 1 PRF.add PRF.first (PRF.const 1)))
 --         (Vector.fromArray #[2])
 
+namespace Bin
+
+inductive Bin where
+  | Z : Bin
+  | O : Bin → Bin
+  | I : Bin → Bin
+
+protected def binToString : Bin → String
+| Bin.Z => ""
+| Bin.O b => "0" ++ Bin.binToString b
+| Bin.I b => "1" ++ Bin.binToString b
+
+instance : ToString Bin where
+  toString := Bin.binToString
+
+protected def inc : Bin → Bin
+  | Bin.Z => Bin.I Bin.Z
+  | Bin.O b => Bin.I b
+  | Bin.I b => Bin.O (Bin.inc b)
+
+protected def ofNat : Nat → Bin
+| 0 => Bin.O Bin.Z
+| n + 1 => Bin.inc (Bin.ofNat n)
+
+instance : OfNat Bin n where
+  ofNat := Bin.ofNat n
+
+--#eval (255 : Bin)
+
+end Bin
+
 namespace TM
 
 inductive Move where
@@ -364,29 +395,7 @@ def emptyMark : Nat
   -- denotes the empty cell
   := 9
 
-inductive BinaryNat where
-  | _Z : BinaryNat
-  | _O : BinaryNat → BinaryNat
-  | _I : BinaryNat → BinaryNat
-
-def incbin : BinaryNat → BinaryNat
-  | BinaryNat._Z => BinaryNat._I BinaryNat._Z
-  | BinaryNat._O b => BinaryNat._I b
-  | BinaryNat._I b => BinaryNat._O (incbin b)
-
-def toBinaryNat : Nat → BinaryNat
-  | 0 => BinaryNat._O BinaryNat._Z
-  | n + 1 => incbin (toBinaryNat n)
-
-def toBitList : BinaryNat → List String
-  | BinaryNat._Z => []
-  | BinaryNat._O b => "0" :: toBitList b
-  | BinaryNat._I b => "1" :: toBitList b
-
-def encodeBinary : Nat → String
-  | n => String.join (toBitList (toBinaryNat n))
-
---#eval encodeBinary 255
+open Bin
 
 def TM.encode : TuringMachine → Nat
   -- encoding as {finalState}{transitions}
@@ -402,6 +411,8 @@ def TM.encode : TuringMachine → Nat
          (List.map encodeStep tm.rules)
 
   where
+    encodeBinary : Nat → String
+    | n => toString (Bin.ofNat n)
     encodeState : Nat → String
     | st => toString stateMark ++ encodeBinary st
     encodeSymbol : Nat → String
