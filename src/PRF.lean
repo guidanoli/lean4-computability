@@ -364,6 +364,25 @@ def emptyMark : Nat
   -- denotes the empty cell
   := 9
 
+inductive BinaryNat where
+  | _Z : BinaryNat
+  | _O : BinaryNat → BinaryNat
+  | _I : BinaryNat → BinaryNat
+
+def incbin : BinaryNat → BinaryNat
+  | BinaryNat._Z => BinaryNat._I BinaryNat._Z
+  | BinaryNat._O b => BinaryNat._I b
+  | BinaryNat._I b => BinaryNat._O (incbin b)
+
+def toBinaryNat : Nat → BinaryNat
+  | 0 => BinaryNat._Z
+  | n + 1 => incbin (toBinaryNat n)
+
+def toBitList : BinaryNat → List String
+  | BinaryNat._Z => []
+  | BinaryNat._O b => "1" :: toBitList b
+  | BinaryNat._I b => "1" :: toBitList b
+
 def TM.encode : TuringMachine → Nat
   -- encoding as {finalState}{transitions}
   --- state is Q{bitstring}, symbol is S{bitstring}
@@ -378,12 +397,12 @@ def TM.encode : TuringMachine → Nat
          (List.map encodeStep tm.rules)
 
   where
-    encodeUnary : Nat → String
-    | n => String.join (List.replicate n "1")
+    encodeBinary : Nat → String
+    | n => String.join (toBitList (toBinaryNat n))
     encodeState : Nat → String
-    | st => toString stateMark ++ encodeUnary st
+    | st => toString stateMark ++ encodeBinary st
     encodeSymbol : Nat → String
-    | sy => toString symbolMark ++ encodeUnary sy
+    | sy => toString symbolMark ++ encodeBinary sy
     encodeMove : Move → String
     | m => toString
         <| match m with
