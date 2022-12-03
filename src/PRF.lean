@@ -314,25 +314,25 @@ namespace Bin
 
 inductive Bin where
   | Z : Bin
-  | O : Bin → Bin
-  | I : Bin → Bin
+  | O (b : Bin) : Bin
+  | I (b : Bin) : Bin
 
-protected def binToString : Bin → String
-| Bin.Z => ""
-| Bin.O b => "0" ++ Bin.binToString b
-| Bin.I b => "1" ++ Bin.binToString b
+protected def toString : Bin → String
+  | Bin.Z => ""
+  | Bin.O b => "0" ++ Bin.toString b
+  | Bin.I b => "1" ++ Bin.toString b
 
 instance : ToString Bin where
-  toString := Bin.binToString
+  toString := Bin.toString
 
-protected def inc : Bin → Bin
+protected def succ : Bin → Bin
   | Bin.Z => Bin.I Bin.Z
   | Bin.O b => Bin.I b
-  | Bin.I b => Bin.O (Bin.inc b)
+  | Bin.I b => Bin.O (Bin.succ b)
 
 protected def ofNat : Nat → Bin
-| 0 => Bin.O Bin.Z
-| n + 1 => Bin.inc (Bin.ofNat n)
+  | 0 => Bin.O Bin.Z
+  | n + 1 => Bin.succ (Bin.ofNat n)
 
 instance : OfNat Bin n where
   ofNat := Bin.ofNat n
